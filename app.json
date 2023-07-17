@@ -1,22 +1,19 @@
 {
-  "name": "your-telegram-bot",
-  "description": "A simple Telegram bot that echoes back messages.",
+  "name": "chimkan-bot",
+  "description": "Telegram Bot: Chimkan",
   "repository": "https://github.com/sureshkim/Chimkan",
-  "keywords": ["telegram", "bot", "python"],
-  "addons": [],
   "env": {
     "PYTHONUNBUFFERED": "1",
-    "TELEGRAM_BOT_TOKEN": {
-      "description": "Your Telegram bot token",
-      "required": true
-    }
-  },
-  "scripts": {
-    "postdeploy": "python bot.py"
+    "TOKEN": "YOUR_TELEGRAM_BOT_TOKEN",
+    "AUTHORIZED_USERS": "[123456789, 987654321]"
   },
   "buildpacks": [
     {
       "url": "heroku/python"
     }
-  ]
+  ],
+  "stack": "container",
+  "scripts": {
+    "start": "python bot.py"
+  }
 }
