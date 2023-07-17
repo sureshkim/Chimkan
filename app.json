@@ -1,0 +1,22 @@
+{
+  "name": "your-telegram-bot",
+  "description": "A simple Telegram bot that echoes back messages.",
+  "repository": "https://github.com/your-username/your-telegram-bot",
+  "keywords": ["telegram", "bot", "python"],
+  "addons": [],
+  "env": {
+    "PYTHONUNBUFFERED": "1",
+    "TELEGRAM_BOT_TOKEN": {
+      "description": "Your Telegram bot token",
+      "required": true
+    }
+  },
+  "scripts": {
+    "postdeploy": "python bot.py"
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
