@@ -1,5 +1,5 @@
 import logging
-import threading
+import os
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -7,11 +7,11 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Your Telegram bot token here
-TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+# Get the Telegram bot token from Heroku environment variable
+TOKEN = os.environ.get("TOKEN")
 
-# List of authorized user IDs (replace with your own user IDs)
-AUTHORIZED_USERS = [123456789, 987654321]
+# Get the list of authorized user IDs from Heroku environment variable and convert to a Python list
+AUTHORIZED_USERS = [int(user_id) for user_id in eval(os.environ.get("AUTHORIZED_USERS"))]
 
 # Variable to store the message to be sent
 message_to_send = None
@@ -23,9 +23,9 @@ send_periodically = False
 def send_message_periodically(context: CallbackContext):
     global message_to_send, send_periodically
     if send_periodically and message_to_send:
-        for chat in context.bot.get_chat_members_count():
-            if chat['type'] == 'group':
-                context.bot.send_message(chat_id=chat['id'], text=message_to_send)
+        for chat_id in context.bot.get_chat_members_count():
+            if chat_id[1]['status'] == 'member':
+                context.bot.send_message(chat_id=chat_id[0], text=message_to_send)
 
         context.job_queue.run_once(send_message_periodically, 300)  # 300 seconds = 5 minutes
 
