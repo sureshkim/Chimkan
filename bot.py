@@ -1,33 +1,31 @@
 import logging
-import os
-from telegram import Update
+from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Get the Telegram bot token from Heroku environment variable
-TOKEN = os.environ.get("TOKEN")
+# Your Telegram bot token here
+TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
 
-# Get the list of authorized user IDs from Heroku environment variable and convert to a Python list
-AUTHORIZED_USERS = [int(user_id) for user_id in eval(os.environ.get("AUTHORIZED_USERS"))]
+# List of authorized user IDs (replace with your own user IDs)
+AUTHORIZED_USERS = [6388590233]
 
 # Variable to store the message to be sent
 message_to_send = None
 
-# Variable to check if periodic sending should continue
-send_periodically = False
-
 # Function to send the message periodically
 def send_message_periodically(context: CallbackContext):
-    global message_to_send, send_periodically
-    if send_periodically and message_to_send:
-        for chat_id in context.bot.get_chat_members_count():
-            if chat_id[1]['status'] == 'member':
-                context.bot.send_message(chat_id=chat_id[0], text=message_to_send)
+    global message_to_send
+    if message_to_send:
+        for chat_id in context.bot.get_chat_ids():
+            try:
+                context.bot.send_message(chat_id=chat_id, text=message_to_send, parse_mode=ParseMode.HTML)
+            except Exception as e:
+                logger.error(f"Error sending message to chat {chat_id}: {e}")
 
-        context.job_queue.run_once(send_message_periodically, 300)  # 300 seconds = 5 minutes
+    context.job_queue.run_repeating(send_message_periodically, interval=300, first=0)  # 300 seconds = 5 minutes
 
 # Handler for /start command
 def start(update: Update, context: CallbackContext):
@@ -35,22 +33,19 @@ def start(update: Update, context: CallbackContext):
 
 # Handler for /forwardall command (ask the user to send a message to be sent periodically)
 def forward_all(update: Update, context: CallbackContext):
-    global message_to_send, send_periodically
+    global message_to_send
     if update.effective_user.id in AUTHORIZED_USERS:
         update.message.reply_text("Please send the message that you want to send to all group chats every 5 minutes. Use /stop to stop the periodic sending.")
-        message_to_send = update.message.text
-        send_periodically = True
-        # Start the periodic sending
-        context.job_queue.run_once(send_message_periodically, 0)  # Start immediately
+        message_to_send = update.message.text_html
     else:
         update.message.reply_text("You are not authorized to use this command.")
 
 # Handler for /stop command (stop the periodic sending)
 def stop_periodic_sending(update: Update, context: CallbackContext):
-    global send_periodically
+    global message_to_send
     if update.effective_user.id in AUTHORIZED_USERS:
         update.message.reply_text("Periodic sending has been stopped.")
-        send_periodically = False
+        message_to_send = None
     else:
         update.message.reply_text("You are not authorized to use this command.")
 
@@ -81,9 +76,11 @@ def main():
     # Error handler
     dp.add_error_handler(error_handler)
 
-    # Start the Bot
+    # Start the Bot and the periodic sending
     updater.start_polling()
     logger.info("Bot started!")
+    context = updater.job_queue
+    context.run_repeating(send_message_periodically, interval=300, first=0)  # 300 seconds = 5 minutes
     updater.idle()
 
 if __name__ == '__main__':
