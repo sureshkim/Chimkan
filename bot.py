@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 # Get the bot token from the environment variable
 TOKEN = os.environ.get('TOKEN')
 
-# Get the authorized user IDs from the environment variable (comma-separated list)
-AUTHORIZED_USERS = [int(user_id) for user_id in os.environ.get('AUTHORIZED_USERS', '').split(',') if user_id]
-
+# Get the authorized user IDs from the environment variable (comma-separated list or list literal)
+AUTHORIZED_USERS = os.environ.get('AUTHORIZED_USERS', '').replace('[', '').replace(']', '').split(',')
+AUTHORIZED_USERS = [int(user_id) for user_id in AUTHORIZED_USERS if user_id]
 
 # Variable to store the message to be sent
 message_to_send = None
@@ -28,6 +28,10 @@ def send_message_periodically(context: CallbackContext):
                 logger.error(f"Error sending message to chat {chat_id}: {e}")
 
     context.job_queue.run_repeating(send_message_periodically, interval=300, first=0)  # 300 seconds = 5 minutes
+
+# Handler for /start command
+# ... (rest of the bot.py remains unchanged)
+
 
 # Handler for /start command
 def start(update: Update, context: CallbackContext):
