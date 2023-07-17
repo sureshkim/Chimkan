@@ -1,4 +1,6 @@
+
 import logging
+import os
 from telegram import Update, ParseMode
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -6,11 +8,12 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Your Telegram bot token here
-TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+# Get the bot token from the environment variable
+TOKEN = os.environ.get('TOKEN')
 
-# List of authorized user IDs (replace with your own user IDs)
-AUTHORIZED_USERS = [6388590233]
+# Get the authorized user IDs from the environment variable (comma-separated list)
+AUTHORIZED_USERS = [int(user_id) for user_id in os.environ.get('AUTHORIZED_USERS', '').split(',') if user_id]
+
 
 # Variable to store the message to be sent
 message_to_send = None
