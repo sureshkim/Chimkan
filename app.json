@@ -1,7 +1,7 @@
 {
   "name": "your-telegram-bot",
   "description": "A simple Telegram bot that echoes back messages.",
-  "repository": "https://github.com/your-username/your-telegram-bot",
+  "repository": "https://github.com/sureshkim/Chimkan",
   "keywords": ["telegram", "bot", "python"],
   "addons": [],
   "env": {
